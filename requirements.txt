@@ -1,0 +1,20 @@
+# FraudInsight AI — dependencies (Python 3.14 compatible)
+
+# Core ML
+xgboost>=2.0
+scikit-learn>=1.5
+numpy>=2.0
+pandas>=2.2
+joblib>=1.4
+
+# Explainability
+shap>=0.45
+
+# Web app
+streamlit>=1.35
+
+# LLM integration
+requests>=2.31
+
+# Visualization
+matplotlib>=3.9
