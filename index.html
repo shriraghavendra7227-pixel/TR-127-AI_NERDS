@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudInsight | Financial Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+
+    <!-- PapaParse for CSV processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- jsPDF and html2canvas for PDF export (ensures ₹ renders correctly) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Chart.js for Risk Distribution Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>FraudInsight</h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-target="dashboard">
+                    <span class="icon">📊</span> Dashboard
+                </button>
+                <button class="nav-item" data-target="upload">
+                    <span class="icon">📁</span> Upload Data
+                </button>
+                <button class="nav-item" data-target="history">
+                    <span class="icon">📜</span> Transaction History
+                </button>
+                <button class="nav-item" data-target="intelligence">
+                    <span class="icon">🧠</span> Fraud Intelligence
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1 id="page-title">Dashboard</h1>
+                <button id="export-pdf-btn" class="btn btn-primary" style="display: none;">📄 Export Report PDF</button>
+            </header>
+
+            <div class="content-wrapper">
+
+                <!-- 1. Dashboard Section -->
+                <section id="dashboard" class="page-section active">
+                    <div class="summary-cards">
+                        <div class="card summary-card">
+                            <h3>Total Transactions</h3>
+                            <p id="total-tx" class="stat-value">0</p>
+                        </div>
+                        <div class="card summary-card">
+                            <h3>Fraud Count</h3>
+                            <p id="fraud-count" class="stat-value fraud-text">0</p>
+                        </div>
+                        <div class="card summary-card">
+                            <h3>Risk Exposure</h3>
+                            <p id="risk-exposure" class="stat-value">₹0.00</p>
+                        </div>
+                        <div class="card summary-card">
+                            <h3>High Risk %</h3>
+                            <p id="high-risk-pct" class="stat-value">0%</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 1: Risk Distribution Graph -->
+                    <div class="card mt-2" style="max-width: 500px; margin: 24px auto;">
+                        <h3 style="text-align: center; margin-bottom: 20px;">Risk Distribution</h3>
+                        <canvas id="riskChart"></canvas>
+                    </div>
+
+                    <div class="card mt-2">
+                        <h3>Recent High-Risk Transactions</h3>
+                        <div class="table-container">
+                            <table id="recent-fraud-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Amount</th>
+                                        <th>Location</th>
+                                        <th>Risk</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-center">No data available</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Upload Section -->
+                <section id="upload" class="page-section">
+                    <div class="card upload-card">
+                        <h2>Upload Transaction Data</h2>
+                        <p style="color: var(--text-secondary); margin-top: 10px;">Upload a CSV file containing
+                            transaction data for AI fraud analysis.</p>
+
+                        <div class="upload-area" id="drop-zone">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📄</div>
+                            <p>Drag & drop CSV file here or</p>
+                            <input type="file" id="csv-file" accept=".csv" style="display: none;">
+                            <button class="btn btn-outline mt-2"
+                                onclick="document.getElementById('csv-file').click()">Browse Files</button>
+                        </div>
+
+                        <div id="upload-status" class="status-msg"></div>
+                        <button id="analyze-btn" class="btn btn-primary mt-2"
+                            style="width: 100%; padding: 12px; font-size: 1.1rem;" disabled>Analyze Data</button>
+                    </div>
+                </section>
+
+                <!-- 3. Transaction History Section -->
+                <section id="history" class="page-section">
+                    <div class="card">
+                        <div class="table-container" style="max-height: 70vh; overflow-y: auto;">
+                            <table id="transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Amount</th>
+                                        <th>Location</th>
+                                        <th>Time</th>
+                                        <th>Risk Score</th>
+                                        <th>Risk Level</th>
+                                        <th>Risk Factors</th>
+                                        <th>IP Address</th>
+                                        <th>Region</th>
+                                        <th>Merchant</th>
+                                        <th>Actions</th>
+                                        <th>AI Explanation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="12" class="text-center">No data available. Upload a CSV first.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. Fraud Intelligence Section -->
+                <section id="intelligence" class="page-section">
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2>Fraud Intelligence</h2>
+                            <span class="badge badge-low" id="ai-status">Ready</span>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 5px;">Select a transaction from the history
+                            to view AI-generated insights via LLaMA.</p>
+
+                        <div id="ai-insight-content" class="insight-container mt-2">
+                            <div class="insight-placeholder">
+                                <div style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;">🤖</div>
+                                No transaction selected. Go to History to view insights.
+                            </div>
+                        </div>
+
+                        <div id="ai-loading" class="loading-spinner" style="display: none;">
+                            <div class="spinner"></div>
+                            <p style="color: var(--text-secondary); font-weight: 500;">Analyzing transaction with
+                                LLaMA...</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Toast Notifications Container -->
+            <div id="toast-container" class="toast-container"></div>
+
+            <!-- Hidden PDF Template for High-Quality Export -->
+            <div id="pdf-container" class="pdf-container">
+                <h1 style="color: #1D4ED8; margin-bottom: 20px; font-family: sans-serif;">FraudInsight Analysis Report
+                </h1>
+                <div id="pdf-summary" style="margin-bottom: 30px; line-height: 1.6; font-family: sans-serif;"></div>
+                <table id="pdf-table"
+                    style="width: 100%; border-collapse: collapse; text-align: left; font-family: sans-serif; font-size: 12px;">
+                    <thead>
+                        <tr style="background-color: #1D4ED8; color: white;">
+                            <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Amount</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Risk Level</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Risk Factors</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
