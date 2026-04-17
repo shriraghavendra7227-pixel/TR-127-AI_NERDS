@@ -19,3 +19,4 @@ requests>=2.31
 # Visualization
 matplotlib>=3.9
 uvicorn
+aiohttp
